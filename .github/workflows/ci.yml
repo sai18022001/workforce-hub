@@ -25,11 +25,14 @@ jobs:
 
       - name: Build
         working-directory: ./backend
+        # ./... means "build all packages recursively from current directory"
         run: go build ./...
 
       - name: Run tests
         working-directory: ./backend
-        run: go test ./... -v
+        # -v = verbose output, shows each test name and PASS/FAIL
+        # -count=1 = disables test caching, always runs fresh
+        run: go test ./... -v -count=1
 
   frontend:
     name: React Frontend CI
@@ -47,10 +50,13 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./frontend
+        # npm ci = clean install, faster than npm install, uses package-lock.json exactly
+        # this is always preferred over npm install in CI
         run: npm ci
 
       - name: Type check
         working-directory: ./frontend
+        # --noEmit = check types but don't output JS files
         run: npx tsc --noEmit
 
       - name: Build
