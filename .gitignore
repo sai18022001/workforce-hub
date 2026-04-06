@@ -1,0 +1,25 @@
+# Go
+backend/vendor/
+backend/*.exe
+backend/tmp/
+
+# Environment variables - NEVER commit secrets
+.env
+.env.local
+.env.*.local
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# EntGo generated files (we'll regenerate these)
+backend/ent/generate.go
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Docker
+*.log
