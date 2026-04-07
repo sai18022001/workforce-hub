@@ -1,0 +1,236 @@
+# Scalar types — tells GraphQL how to handle Go's time.Time
+scalar Time
+
+# ─────────────────────────────────────────
+# TYPES — mirror your EntGo entities
+# ─────────────────────────────────────────
+
+type Role {
+  id: ID!
+  name: String!
+  description: String
+  createdAt: Time!
+  users: [User!]
+}
+
+type Department {
+  id: ID!
+  name: String!
+  description: String
+  createdAt: Time!
+  users: [User!]
+  projects: [Project!]
+}
+
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  status: UserStatus!
+  createdAt: Time!
+  updatedAt: Time!
+  role: Role
+  department: Department
+  assignments: [ProjectAssignment!]
+  timesheets: [Timesheet!]
+}
+
+type Project {
+  id: ID!
+  name: String!
+  description: String
+  status: ProjectStatus!
+  startDate: Time
+  endDate: Time
+  createdAt: Time!
+  updatedAt: Time!
+  department: Department
+  assignments: [ProjectAssignment!]
+  timesheets: [Timesheet!]
+}
+
+type ProjectAssignment {
+  id: ID!
+  projectRole: ProjectRole!
+  allocatedHours: Float!
+  assignedAt: Time!
+  user: User!
+  project: Project!
+}
+
+type Timesheet {
+  id: ID!
+  date: Time!
+  hoursWorked: Float!
+  description: String
+  status: TimesheetStatus!
+  createdAt: Time!
+  updatedAt: Time!
+  user: User!
+  project: Project!
+}
+
+# Auth response returned after login/register
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+# Dashboard summary stats
+type DashboardStats {
+  totalUsers: Int!
+  totalProjects: Int!
+  activeProjects: Int!
+  totalHoursLogged: Float!
+}
+
+# ─────────────────────────────────────────
+# ENUMS — match your EntGo enum values exactly
+# ─────────────────────────────────────────
+
+enum UserStatus {
+  active
+  inactive
+  on_leave
+}
+
+enum ProjectStatus {
+  planning
+  active
+  on_hold
+  completed
+  cancelled
+}
+
+enum ProjectRole {
+  lead
+  developer
+  designer
+  tester
+  analyst
+}
+
+enum TimesheetStatus {
+  draft
+  submitted
+  approved
+  rejected
+}
+
+# ─────────────────────────────────────────
+# INPUT TYPES — used for mutations (like request bodies)
+# ─────────────────────────────────────────
+
+input RegisterInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  roleId: ID!
+  departmentId: ID!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input CreateProjectInput {
+  name: String!
+  description: String
+  departmentId: ID!
+  startDate: Time
+  endDate: Time
+}
+
+input UpdateProjectInput {
+  name: String
+  description: String
+  status: ProjectStatus
+  startDate: Time
+  endDate: Time
+}
+
+input AssignUserInput {
+  userId: ID!
+  projectId: ID!
+  projectRole: ProjectRole!
+  allocatedHours: Float!
+}
+
+input LogTimesheetInput {
+  userId: ID!
+  projectId: ID!
+  date: Time!
+  hoursWorked: Float!
+  description: String
+}
+
+input UpdateTimesheetStatusInput {
+  timesheetId: ID!
+  status: TimesheetStatus!
+}
+
+input CreateDepartmentInput {
+  name: String!
+  description: String
+}
+
+# ─────────────────────────────────────────
+# QUERIES — read operations (like GET requests)
+# ─────────────────────────────────────────
+
+type Query {
+  # Auth
+  me: User!
+
+  # Users
+  users: [User!]!
+  user(id: ID!): User!
+
+  # Departments
+  departments: [Department!]!
+  department(id: ID!): Department!
+
+  # Roles
+  roles: [Role!]!
+
+  # Projects
+  projects: [Project!]!
+  project(id: ID!): Project!
+  projectsByDepartment(departmentId: ID!): [Project!]!
+
+  # Timesheets
+  timesheets(userId: ID!): [Timesheet!]!
+  pendingTimesheets: [Timesheet!]!
+
+  # Dashboard
+  dashboardStats: DashboardStats!
+}
+
+# ─────────────────────────────────────────
+# MUTATIONS — write operations (like POST/PUT/DELETE)
+# ─────────────────────────────────────────
+
+type Mutation {
+  # Auth
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+
+  # Department
+  createDepartment(input: CreateDepartmentInput!): Department!
+
+  # Project
+  createProject(input: CreateProjectInput!): Project!
+  updateProject(id: ID!, input: UpdateProjectInput!): Project!
+  deleteProject(id: ID!): Boolean!
+
+  # Assignments
+  assignUserToProject(input: AssignUserInput!): ProjectAssignment!
+  removeUserFromProject(assignmentId: ID!): Boolean!
+
+  # Timesheets
+  logTimesheet(input: LogTimesheetInput!): Timesheet!
+  updateTimesheetStatus(input: UpdateTimesheetStatusInput!): Timesheet!
+}

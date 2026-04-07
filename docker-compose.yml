@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: workforce_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: workforce_hub
+      MYSQL_USER: workforce_user
+      MYSQL_PASSWORD: workforce_pass
+    ports:
+      - "3306:3306"       # host:container — exposes MySQL to your local machine
+    volumes:
+      - mysql_data:/var/lib/mysql         # persistent volume — data survives container restarts
+      - ./db/init:/docker-entrypoint-initdb.d  # SQL files here run on first startup
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: workforce_adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"       # Adminer web UI at http://localhost:8081
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:   # named volume managed by Docker, persists across container restarts
