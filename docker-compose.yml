@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   mysql:
     image: mysql:8.0
@@ -11,10 +9,10 @@ services:
       MYSQL_USER: workforce_user
       MYSQL_PASSWORD: workforce_pass
     ports:
-      - "3306:3306"       # host:container — exposes MySQL to your local machine
+      - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql         # persistent volume — data survives container restarts
-      - ./db/init:/docker-entrypoint-initdb.d  # SQL files here run on first startup
+      - mysql_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
       interval: 10s
@@ -26,10 +24,41 @@ services:
     container_name: workforce_adminer
     restart: unless-stopped
     ports:
-      - "8081:8080"       # Adminer web UI at http://localhost:8081
+      - "8081:8080"
     depends_on:
       mysql:
         condition: service_healthy
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: workforce_backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: mysql          # "mysql" is the Docker service name — Docker DNS resolves it
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: workforce_hub
+      JWT_SECRET: workforce-hub-super-secret-jwt-key-2024
+      SERVER_PORT: 8080
+    depends_on:
+      mysql:
+        condition: service_healthy  # waits for MySQL to be healthy before starting
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: workforce_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"             # app available at http://localhost:3000 in Docker
+    depends_on:
+      - backend
+
 volumes:
-  mysql_data:   # named volume managed by Docker, persists across container restarts
+  mysql_data:

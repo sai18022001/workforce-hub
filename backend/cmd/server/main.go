@@ -20,6 +20,7 @@ func main() {
 	// Load .env
 	for _, path := range []string{".env", "../.env", "../../.env"} {
 		if err := godotenv.Load(path); err == nil {
+			log.Println("Loaded .env from:", path)
 			break
 		}
 	}
