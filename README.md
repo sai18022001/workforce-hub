@@ -315,4 +315,4 @@ go test ./... -v
 M.Tech Signal Processing & ML — NIT Surathkal  
 SDE Intern @ Siemens Digital Industries Software  
 
-[LinkedIn](https://linkedin.com/in/sai-sanjay-chikne · [GitHub](https://github.com/sai18022001)
+[LinkedIn](https://linkedin.com/in/sai-sanjay-chikne) · [GitHub](https://github.com/sai18022001)
